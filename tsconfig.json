@@ -1,9 +1,8 @@
 {
-	"extends": "@ljharb/tsconfig",
+	"include": ["source/"],
+	"exclude": ["node_modules/"],
+	"extends": "@express-rate-limit/tsconfig",
 	"compilerOptions": {
-		"target": "ES2021",
-	},
-	"exclude": [
-		"coverage",
-	],
+		"target": "ES2020"
+	}
 }

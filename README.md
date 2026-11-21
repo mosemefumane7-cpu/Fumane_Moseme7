@@ -1,65 +1,57 @@
-# ecdsa-sig-formatter
+# forwarded
 
-[![Build Status](https://travis-ci.org/Brightspace/node-ecdsa-sig-formatter.svg?branch=master)](https://travis-ci.org/Brightspace/node-ecdsa-sig-formatter) [![Coverage Status](https://coveralls.io/repos/Brightspace/node-ecdsa-sig-formatter/badge.svg)](https://coveralls.io/r/Brightspace/node-ecdsa-sig-formatter)
+[![NPM Version][npm-image]][npm-url]
+[![NPM Downloads][downloads-image]][downloads-url]
+[![Node.js Version][node-version-image]][node-version-url]
+[![Build Status][ci-image]][ci-url]
+[![Test Coverage][coveralls-image]][coveralls-url]
 
-Translate between JOSE and ASN.1/DER encodings for ECDSA signatures
+Parse HTTP X-Forwarded-For header
 
-## Install
+## Installation
+
+This is a [Node.js](https://nodejs.org/en/) module available through the
+[npm registry](https://www.npmjs.com/). Installation is done using the
+[`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
+
 ```sh
-npm install ecdsa-sig-formatter --save
+$ npm install forwarded
 ```
 
-## Usage
+## API
+
 ```js
-var format = require('ecdsa-sig-formatter');
-
-var derSignature = '..'; // asn.1/DER encoded ecdsa signature
-
-var joseSignature = format.derToJose(derSignature);
-
+var forwarded = require('forwarded')
 ```
 
-### API
+### forwarded(req)
 
----
+```js
+var addresses = forwarded(req)
+```
 
-#### `.derToJose(Buffer|String signature, String alg)` -> `String`
+Parse the `X-Forwarded-For` header from the request. Returns an array
+of the addresses, including the socket address for the `req`, in reverse
+order (i.e. index `0` is the socket address and the last index is the
+furthest address, typically the end-user).
 
-Convert the ASN.1/DER encoded signature to a JOSE-style concatenated signature.
-Returns a _base64 url_ encoded `String`.
+## Testing
 
-* If _signature_ is a `String`, it should be _base64_ encoded
-* _alg_ must be one of _ES256_, _ES384_ or _ES512_
+```sh
+$ npm test
+```
 
----
+## License
 
-#### `.joseToDer(Buffer|String signature, String alg)` -> `Buffer`
+[MIT](LICENSE)
 
-Convert the JOSE-style concatenated signature to an ASN.1/DER encoded
-signature. Returns a `Buffer`
-
-* If _signature_ is a `String`, it should be _base64 url_ encoded
-* _alg_ must be one of _ES256_, _ES384_ or _ES512_
-
-## Contributing
-
-1. **Fork** the repository. Committing directly against this repository is
-   highly discouraged.
-
-2. Make your modifications in a branch, updating and writing new unit tests
-   as necessary in the `spec` directory.
-
-3. Ensure that all tests pass with `npm test`
-
-4. `rebase` your changes against master. *Do not merge*.
-
-5. Submit a pull request to this repository. Wait for tests to run and someone
-   to chime in.
-
-### Code Style
-
-This repository is configured with [EditorConfig][EditorConfig] and
-[ESLint][ESLint] rules.
-
-[EditorConfig]: http://editorconfig.org/
-[ESLint]: http://eslint.org
+[ci-image]: https://badgen.net/github/checks/jshttp/forwarded/master?label=ci
+[ci-url]: https://github.com/jshttp/forwarded/actions?query=workflow%3Aci
+[npm-image]: https://img.shields.io/npm/v/forwarded.svg
+[npm-url]: https://npmjs.org/package/forwarded
+[node-version-image]: https://img.shields.io/node/v/forwarded.svg
+[node-version-url]: https://nodejs.org/en/download/
+[coveralls-image]: https://img.shields.io/coveralls/jshttp/forwarded/master.svg
+[coveralls-url]: https://coveralls.io/r/jshttp/forwarded?branch=master
+[downloads-image]: https://img.shields.io/npm/dm/forwarded.svg
+[downloads-url]: https://npmjs.org/package/forwarded

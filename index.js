@@ -1,6 +1,6 @@
 /*!
- * ee-first
- * Copyright(c) 2014 Jonathan Ong
+ * forwarded
+ * Copyright(c) 2014-2017 Douglas Christopher Wilson
  * MIT Licensed
  */
 
@@ -11,85 +11,80 @@
  * @public
  */
 
-module.exports = first
+module.exports = forwarded
 
 /**
- * Get the first event in a set of event emitters and event pairs.
+ * Get all addresses in the request, using the `X-Forwarded-For` header.
  *
- * @param {array} stuff
- * @param {function} done
+ * @param {object} req
+ * @return {array}
  * @public
  */
 
-function first(stuff, done) {
-  if (!Array.isArray(stuff))
-    throw new TypeError('arg must be an array of [ee, events...] arrays')
-
-  var cleanups = []
-
-  for (var i = 0; i < stuff.length; i++) {
-    var arr = stuff[i]
-
-    if (!Array.isArray(arr) || arr.length < 2)
-      throw new TypeError('each array member must be [ee, events...]')
-
-    var ee = arr[0]
-
-    for (var j = 1; j < arr.length; j++) {
-      var event = arr[j]
-      var fn = listener(event, callback)
-
-      // listen to the event
-      ee.on(event, fn)
-      // push this listener to the list of cleanups
-      cleanups.push({
-        ee: ee,
-        event: event,
-        fn: fn,
-      })
-    }
+function forwarded (req) {
+  if (!req) {
+    throw new TypeError('argument req is required')
   }
 
-  function callback() {
-    cleanup()
-    done.apply(null, arguments)
-  }
+  // simple header parsing
+  var proxyAddrs = parse(req.headers['x-forwarded-for'] || '')
+  var socketAddr = getSocketAddr(req)
+  var addrs = [socketAddr].concat(proxyAddrs)
 
-  function cleanup() {
-    var x
-    for (var i = 0; i < cleanups.length; i++) {
-      x = cleanups[i]
-      x.ee.removeListener(x.event, x.fn)
-    }
-  }
-
-  function thunk(fn) {
-    done = fn
-  }
-
-  thunk.cancel = cleanup
-
-  return thunk
+  // return all addresses
+  return addrs
 }
 
 /**
- * Create the event listener.
+ * Get the socket address for a request.
+ *
+ * @param {object} req
+ * @return {string}
  * @private
  */
 
-function listener(event, done) {
-  return function onevent(arg1) {
-    var args = new Array(arguments.length)
-    var ee = this
-    var err = event === 'error'
-      ? arg1
-      : null
+function getSocketAddr (req) {
+  return req.socket
+    ? req.socket.remoteAddress
+    : req.connection.remoteAddress
+}
 
-    // copy args to prevent arguments escaping scope
-    for (var i = 0; i < args.length; i++) {
-      args[i] = arguments[i]
+/**
+ * Parse the X-Forwarded-For header.
+ *
+ * @param {string} header
+ * @private
+ */
+
+function parse (header) {
+  var end = header.length
+  var list = []
+  var start = header.length
+
+  // gather addresses, backwards
+  for (var i = header.length - 1; i >= 0; i--) {
+    switch (header.charCodeAt(i)) {
+      case 0x20: /*   */
+        if (start === end) {
+          start = end = i
+        }
+        break
+      case 0x2c: /* , */
+        if (start !== end) {
+          list.push(header.substring(start, end))
+        }
+        start = end = i
+        break
+      default:
+        start = i
+        break
     }
-
-    done(err, ee, event, args)
   }
+
+  // final address
+  if (start !== end) {
+    list.push(header.substring(start, end))
+  }
+
+  return list
 }
