@@ -1,19 +1,93 @@
-/**
- * Adapted from https://github.com/mysqljs/sqlstring/blob/cd528556b4b6bcf300c3db515026935dedf7cfa1/lib/SqlString.js
- * MIT LICENSE: https://github.com/mysqljs/sqlstring/blob/cd528556b4b6bcf300c3db515026935dedf7cfa1/LICENSE
- */
-import type { Expand, Raw, SqlMode, SqlValue, TemporalValue, Timezone } from './types.js';
-import { Buffer } from 'buffer';
-export type { Expand, Raw, SqlMode, SqlValue, TemporalValue, Timezone, } from './types.js';
-/** Owned by every value `expand()` marks, and shared through the global registry by the CommonJS build, the ESM build, and every installed copy. */
-export declare const EXPAND_SYMBOL: unique symbol;
-export declare const dateToString: (date: Date, timezone: Timezone) => string;
-export declare const temporalToString: (value: TemporalValue, timezone?: Timezone) => string;
-export declare const escapeId: (value: SqlValue, forbidQualified?: boolean) => string;
-export declare const objectToValues: (object: Record<string, SqlValue> | Map<string, SqlValue>, timezone?: Timezone) => string;
-export declare const bufferToString: (buffer: Buffer) => string;
-export declare const arrayToList: (array: SqlValue[], timezone?: Timezone) => string;
-export declare const escape: (value: SqlValue, stringifyObjects?: boolean, timezone?: Timezone) => string;
-export declare const format: (sql: string, values?: SqlValue | SqlValue[], stringifyObjects?: boolean, timezone?: Timezone, sqlMode?: SqlMode) => string;
-export declare const raw: (sql: string) => Raw;
-export declare const expand: (value: Record<string, unknown> | Map<string, SqlValue>) => Expand;
+import Dispatcher from './dispatcher'
+import { setGlobalDispatcher, getGlobalDispatcher } from './global-dispatcher'
+import { setGlobalOrigin, getGlobalOrigin } from './global-origin'
+import Pool from './pool'
+import { RedirectHandler, DecoratorHandler } from './handlers'
+
+import BalancedPool from './balanced-pool'
+import RoundRobinPool from './round-robin-pool'
+import Client from './client'
+import H2CClient from './h2c-client'
+import buildConnector from './connector'
+import errors from './errors'
+import Agent from './agent'
+import Dispatcher1Wrapper from './dispatcher1-wrapper'
+import MockClient from './mock-client'
+import MockPool from './mock-pool'
+import MockAgent from './mock-agent'
+import { SnapshotAgent } from './snapshot-agent'
+import { MockCallHistory, MockCallHistoryLog } from './mock-call-history'
+import mockErrors from './mock-errors'
+import ProxyAgent from './proxy-agent'
+import Socks5ProxyAgent from './socks5-proxy-agent'
+import EnvHttpProxyAgent from './env-http-proxy-agent'
+import RetryHandler from './retry-handler'
+import RetryAgent from './retry-agent'
+import { request, pipeline, stream, connect, upgrade } from './api'
+import interceptors from './interceptors'
+
+import CacheInterceptor from './cache-interceptor'
+declare const cacheStores: {
+  MemoryCacheStore: typeof CacheInterceptor.MemoryCacheStore;
+  SqliteCacheStore: typeof CacheInterceptor.SqliteCacheStore;
+}
+
+export * from './util'
+export * from './cookies'
+export * from './eventsource'
+export * from './fetch'
+export * from './formdata'
+export * from './diagnostics-channel'
+export * from './websocket'
+export * from './content-type'
+export * from './cache'
+export { Interceptable } from './mock-interceptor'
+
+declare function globalThisInstall (): void
+
+export { Dispatcher, BalancedPool, RoundRobinPool, Pool, Client, buildConnector, errors, Agent, Dispatcher1Wrapper, request, stream, pipeline, connect, upgrade, setGlobalDispatcher, getGlobalDispatcher, setGlobalOrigin, getGlobalOrigin, interceptors, cacheStores, MockClient, MockPool, MockAgent, SnapshotAgent, MockCallHistory, MockCallHistoryLog, mockErrors, ProxyAgent, Socks5ProxyAgent, EnvHttpProxyAgent, RedirectHandler, DecoratorHandler, RetryHandler, RetryAgent, H2CClient, globalThisInstall as install }
+export default Undici
+
+declare namespace Undici {
+  const Dispatcher: typeof import('./dispatcher').default
+  const Pool: typeof import('./pool').default
+  const RedirectHandler: typeof import ('./handlers').RedirectHandler
+  const DecoratorHandler: typeof import ('./handlers').DecoratorHandler
+  const RetryHandler: typeof import ('./retry-handler').default
+  const BalancedPool: typeof import('./balanced-pool').default
+  const RoundRobinPool: typeof import('./round-robin-pool').default
+  const Client: typeof import('./client').default
+  const H2CClient: typeof import('./h2c-client').default
+  const buildConnector: typeof import('./connector').default
+  const errors: typeof import('./errors').default
+  const Agent: typeof import('./agent').default
+  const Dispatcher1Wrapper: typeof import('./dispatcher1-wrapper').default
+  const setGlobalDispatcher: typeof import('./global-dispatcher').setGlobalDispatcher
+  const getGlobalDispatcher: typeof import('./global-dispatcher').getGlobalDispatcher
+  const request: typeof import('./api').request
+  const stream: typeof import('./api').stream
+  const pipeline: typeof import('./api').pipeline
+  const connect: typeof import('./api').connect
+  const upgrade: typeof import('./api').upgrade
+  const MockClient: typeof import('./mock-client').default
+  const MockPool: typeof import('./mock-pool').default
+  const MockAgent: typeof import('./mock-agent').default
+  const SnapshotAgent: typeof import('./snapshot-agent').SnapshotAgent
+  const MockCallHistory: typeof import('./mock-call-history').MockCallHistory
+  const MockCallHistoryLog: typeof import('./mock-call-history').MockCallHistoryLog
+  const mockErrors: typeof import('./mock-errors').default
+  const ProxyAgent: typeof import('./proxy-agent').default
+  const Socks5ProxyAgent: typeof import('./socks5-proxy-agent').default
+  const fetch: typeof import('./fetch').fetch
+  const Headers: typeof import('./fetch').Headers
+  const Response: typeof import('./fetch').Response
+  const Request: typeof import('./fetch').Request
+  const FormData: typeof import('./formdata').FormData
+  const caches: typeof import('./cache').caches
+  const interceptors: typeof import('./interceptors').default
+  const cacheStores: {
+    MemoryCacheStore: typeof import('./cache-interceptor').default.MemoryCacheStore,
+    SqliteCacheStore: typeof import('./cache-interceptor').default.SqliteCacheStore
+  }
+  const install: typeof globalThisInstall
+}
