@@ -1,146 +1,63 @@
-/*!
- * statuses
- * Copyright(c) 2014 Jonathan Ong
- * Copyright(c) 2016 Douglas Christopher Wilson
- * MIT Licensed
- */
+'use strict';
 
-'use strict'
+var callBind = require('../');
+var hasStrictMode = require('has-strict-mode')();
+var forEach = require('for-each');
+var inspect = require('object-inspect');
+var v = require('es-value-fixtures');
 
-/**
- * Module dependencies.
- * @private
- */
+var test = require('tape');
 
-var codes = require('./codes.json')
+test('callBindBasic', function (t) {
+	forEach(v.nonFunctions, function (nonFunction) {
+		t['throws'](
+			// @ts-expect-error
+			function () { callBind([nonFunction]); },
+			TypeError,
+			inspect(nonFunction) + ' is not a function'
+		);
+	});
 
-/**
- * Module exports.
- * @public
- */
+	var sentinel = { sentinel: true };
+	/** @type {<T, A extends number, B extends number>(this: T, a: A, b: B) => [T | undefined, A, B]} */
+	var func = function (a, b) {
+		// eslint-disable-next-line no-invalid-this
+		return [!hasStrictMode && this === global ? undefined : this, a, b];
+	};
+	t.equal(func.length, 2, 'original function length is 2');
 
-module.exports = status
+	/** type {(thisArg: unknown, a: number, b: number) => [unknown, number, number]} */
+	var bound = callBind([func]);
+	/** type {((a: number, b: number) => [typeof sentinel, typeof a, typeof b])} */
+	var boundR = callBind([func, sentinel]);
+	/** type {((b: number) => [typeof sentinel, number, typeof b])} */
+	var boundArg = callBind([func, sentinel, /** @type {const} */ (1)]);
 
-// status code to message map
-status.message = codes
+	// @ts-expect-error
+	t.deepEqual(bound(), [undefined, undefined, undefined], 'bound func with no args');
 
-// status message (lower-case) to code map
-status.code = createMessageToStatusCodeMap(codes)
+	// @ts-expect-error
+	t.deepEqual(func(), [undefined, undefined, undefined], 'unbound func with too few args');
+	// @ts-expect-error
+	t.deepEqual(bound(1, 2), [hasStrictMode ? 1 : Object(1), 2, undefined], 'bound func too few args');
+	// @ts-expect-error
+	t.deepEqual(boundR(), [sentinel, undefined, undefined], 'bound func with receiver, with too few args');
+	// @ts-expect-error
+	t.deepEqual(boundArg(), [sentinel, 1, undefined], 'bound func with receiver and arg, with too few args');
 
-// array of status codes
-status.codes = createStatusCodeList(codes)
+	t.deepEqual(func(1, 2), [undefined, 1, 2], 'unbound func with right args');
+	t.deepEqual(bound(1, 2, 3), [hasStrictMode ? 1 : Object(1), 2, 3], 'bound func with right args');
+	t.deepEqual(boundR(1, 2), [sentinel, 1, 2], 'bound func with receiver, with right args');
+	t.deepEqual(boundArg(2), [sentinel, 1, 2], 'bound func with receiver and arg, with right arg');
 
-// status codes for redirects
-status.redirect = {
-  300: true,
-  301: true,
-  302: true,
-  303: true,
-  305: true,
-  307: true,
-  308: true
-}
+	// @ts-expect-error
+	t.deepEqual(func(1, 2, 3), [undefined, 1, 2], 'unbound func with too many args');
+	// @ts-expect-error
+	t.deepEqual(bound(1, 2, 3, 4), [hasStrictMode ? 1 : Object(1), 2, 3], 'bound func with too many args');
+	// @ts-expect-error
+	t.deepEqual(boundR(1, 2, 3), [sentinel, 1, 2], 'bound func with receiver, with too many args');
+	// @ts-expect-error
+	t.deepEqual(boundArg(2, 3), [sentinel, 1, 2], 'bound func with receiver and arg, with too many args');
 
-// status codes for empty bodies
-status.empty = {
-  204: true,
-  205: true,
-  304: true
-}
-
-// status codes for when you should retry the request
-status.retry = {
-  502: true,
-  503: true,
-  504: true
-}
-
-/**
- * Create a map of message to status code.
- * @private
- */
-
-function createMessageToStatusCodeMap (codes) {
-  var map = {}
-
-  Object.keys(codes).forEach(function forEachCode (code) {
-    var message = codes[code]
-    var status = Number(code)
-
-    // populate map
-    map[message.toLowerCase()] = status
-  })
-
-  return map
-}
-
-/**
- * Create a list of all status codes.
- * @private
- */
-
-function createStatusCodeList (codes) {
-  return Object.keys(codes).map(function mapCode (code) {
-    return Number(code)
-  })
-}
-
-/**
- * Get the status code for given message.
- * @private
- */
-
-function getStatusCode (message) {
-  var msg = message.toLowerCase()
-
-  if (!Object.prototype.hasOwnProperty.call(status.code, msg)) {
-    throw new Error('invalid status message: "' + message + '"')
-  }
-
-  return status.code[msg]
-}
-
-/**
- * Get the status message for given code.
- * @private
- */
-
-function getStatusMessage (code) {
-  if (!Object.prototype.hasOwnProperty.call(status.message, code)) {
-    throw new Error('invalid status code: ' + code)
-  }
-
-  return status.message[code]
-}
-
-/**
- * Get the status code.
- *
- * Given a number, this will throw if it is not a known status
- * code, otherwise the code will be returned. Given a string,
- * the string will be parsed for a number and return the code
- * if valid, otherwise will lookup the code assuming this is
- * the status message.
- *
- * @param {string|number} code
- * @returns {number}
- * @public
- */
-
-function status (code) {
-  if (typeof code === 'number') {
-    return getStatusMessage(code)
-  }
-
-  if (typeof code !== 'string') {
-    throw new TypeError('code must be a number or string')
-  }
-
-  // '403'
-  var n = parseInt(code, 10)
-  if (!isNaN(n)) {
-    return getStatusMessage(n)
-  }
-
-  return getStatusCode(code)
-}
+	t.end();
+});
