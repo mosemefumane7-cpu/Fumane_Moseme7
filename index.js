@@ -1,290 +1,294 @@
-/*!
- * http-errors
- * Copyright(c) 2014 Jonathan Ong
- * Copyright(c) 2016 Douglas Christopher Wilson
- * MIT Licensed
+/**
+ * lodash (Custom Build) <https://lodash.com/>
+ * Build: `lodash modularize exports="npm" -o ./`
+ * Copyright jQuery Foundation and other contributors <https://jquery.org/>
+ * Released under MIT license <https://lodash.com/license>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
  */
 
-'use strict'
+/** Used as the `TypeError` message for "Functions" methods. */
+var FUNC_ERROR_TEXT = 'Expected a function';
+
+/** Used as references for various `Number` constants. */
+var INFINITY = 1 / 0,
+    MAX_INTEGER = 1.7976931348623157e+308,
+    NAN = 0 / 0;
+
+/** `Object#toString` result references. */
+var symbolTag = '[object Symbol]';
+
+/** Used to match leading and trailing whitespace. */
+var reTrim = /^\s+|\s+$/g;
+
+/** Used to detect bad signed hexadecimal string values. */
+var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
+
+/** Used to detect binary string values. */
+var reIsBinary = /^0b[01]+$/i;
+
+/** Used to detect octal string values. */
+var reIsOctal = /^0o[0-7]+$/i;
+
+/** Built-in method references without a dependency on `root`. */
+var freeParseInt = parseInt;
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
 
 /**
- * Module dependencies.
- * @private
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
  */
-
-var deprecate = require('depd')('http-errors')
-var setPrototypeOf = require('setprototypeof')
-var statuses = require('statuses')
-var inherits = require('inherits')
-var toIdentifier = require('toidentifier')
+var objectToString = objectProto.toString;
 
 /**
- * Module exports.
- * @public
- */
-
-module.exports = createError
-module.exports.HttpError = createHttpErrorConstructor()
-module.exports.isHttpError = createIsHttpErrorFunction(module.exports.HttpError)
-
-// Populate exports for all constructors
-populateConstructorExports(module.exports, statuses.codes, module.exports.HttpError)
-
-/**
- * Get the code class of a status code.
- * @private
- */
-
-function codeClass (status) {
-  return Number(String(status).charAt(0) + '00')
-}
-
-/**
- * Create a new HTTP Error.
+ * Creates a function that invokes `func`, with the `this` binding and arguments
+ * of the created function, while it's called less than `n` times. Subsequent
+ * calls to the created function return the result of the last `func` invocation.
  *
- * @returns {Error}
- * @public
- */
-
-function createError () {
-  // so much arity going on ~_~
-  var err
-  var msg
-  var status = 500
-  var props = {}
-  for (var i = 0; i < arguments.length; i++) {
-    var arg = arguments[i]
-    var type = typeof arg
-    if (type === 'object' && arg instanceof Error) {
-      err = arg
-      status = err.status || err.statusCode || status
-    } else if (type === 'number' && i === 0) {
-      status = arg
-    } else if (type === 'string') {
-      msg = arg
-    } else if (type === 'object') {
-      props = arg
-    } else {
-      throw new TypeError('argument #' + (i + 1) + ' unsupported type ' + type)
-    }
-  }
-
-  if (typeof status === 'number' && (status < 400 || status >= 600)) {
-    deprecate('non-error status code; use only 4xx or 5xx status codes')
-  }
-
-  if (typeof status !== 'number' ||
-    (!statuses.message[status] && (status < 400 || status >= 600))) {
-    status = 500
-  }
-
-  // constructor
-  var HttpError = createError[status] || createError[codeClass(status)]
-
-  if (!err) {
-    // create error
-    err = HttpError
-      ? new HttpError(msg)
-      : new Error(msg || statuses.message[status])
-    Error.captureStackTrace(err, createError)
-  }
-
-  if (!HttpError || !(err instanceof HttpError) || err.status !== status) {
-    // add properties to generic error
-    err.expose = status < 500
-    err.status = err.statusCode = status
-  }
-
-  for (var key in props) {
-    if (key !== 'status' && key !== 'statusCode') {
-      err[key] = props[key]
-    }
-  }
-
-  return err
-}
-
-/**
- * Create HTTP error abstract base class.
- * @private
- */
-
-function createHttpErrorConstructor () {
-  function HttpError () {
-    throw new TypeError('cannot construct abstract class')
-  }
-
-  inherits(HttpError, Error)
-
-  return HttpError
-}
-
-/**
- * Create a constructor for a client error.
- * @private
- */
-
-function createClientErrorConstructor (HttpError, name, code) {
-  var className = toClassName(name)
-
-  function ClientError (message) {
-    // create the error object
-    var msg = message != null ? message : statuses.message[code]
-    var err = new Error(msg)
-
-    // capture a stack trace to the construction point
-    Error.captureStackTrace(err, ClientError)
-
-    // adjust the [[Prototype]]
-    setPrototypeOf(err, ClientError.prototype)
-
-    // redefine the error message
-    Object.defineProperty(err, 'message', {
-      enumerable: true,
-      configurable: true,
-      value: msg,
-      writable: true
-    })
-
-    // redefine the error name
-    Object.defineProperty(err, 'name', {
-      enumerable: false,
-      configurable: true,
-      value: className,
-      writable: true
-    })
-
-    return err
-  }
-
-  inherits(ClientError, HttpError)
-  nameFunc(ClientError, className)
-
-  ClientError.prototype.status = code
-  ClientError.prototype.statusCode = code
-  ClientError.prototype.expose = true
-
-  return ClientError
-}
-
-/**
- * Create function to test is a value is a HttpError.
- * @private
- */
-
-function createIsHttpErrorFunction (HttpError) {
-  return function isHttpError (val) {
-    if (!val || typeof val !== 'object') {
-      return false
-    }
-
-    if (val instanceof HttpError) {
-      return true
-    }
-
-    return val instanceof Error &&
-      typeof val.expose === 'boolean' &&
-      typeof val.statusCode === 'number' && val.status === val.statusCode
-  }
-}
-
-/**
- * Create a constructor for a server error.
- * @private
- */
-
-function createServerErrorConstructor (HttpError, name, code) {
-  var className = toClassName(name)
-
-  function ServerError (message) {
-    // create the error object
-    var msg = message != null ? message : statuses.message[code]
-    var err = new Error(msg)
-
-    // capture a stack trace to the construction point
-    Error.captureStackTrace(err, ServerError)
-
-    // adjust the [[Prototype]]
-    setPrototypeOf(err, ServerError.prototype)
-
-    // redefine the error message
-    Object.defineProperty(err, 'message', {
-      enumerable: true,
-      configurable: true,
-      value: msg,
-      writable: true
-    })
-
-    // redefine the error name
-    Object.defineProperty(err, 'name', {
-      enumerable: false,
-      configurable: true,
-      value: className,
-      writable: true
-    })
-
-    return err
-  }
-
-  inherits(ServerError, HttpError)
-  nameFunc(ServerError, className)
-
-  ServerError.prototype.status = code
-  ServerError.prototype.statusCode = code
-  ServerError.prototype.expose = false
-
-  return ServerError
-}
-
-/**
- * Set the name of a function, if possible.
- * @private
- */
-
-function nameFunc (func, name) {
-  var desc = Object.getOwnPropertyDescriptor(func, 'name')
-
-  if (desc && desc.configurable) {
-    desc.value = name
-    Object.defineProperty(func, 'name', desc)
-  }
-}
-
-/**
- * Populate the exports object with constructors for every error class.
- * @private
- */
-
-function populateConstructorExports (exports, codes, HttpError) {
-  codes.forEach(function forEachCode (code) {
-    var CodeError
-    var name = toIdentifier(statuses.message[code])
-
-    switch (codeClass(code)) {
-      case 400:
-        CodeError = createClientErrorConstructor(HttpError, name, code)
-        break
-      case 500:
-        CodeError = createServerErrorConstructor(HttpError, name, code)
-        break
-    }
-
-    if (CodeError) {
-      // export the constructor
-      exports[code] = CodeError
-      exports[name] = CodeError
-    }
-  })
-}
-
-/**
- * Get a class name from a name identifier.
+ * @static
+ * @memberOf _
+ * @since 3.0.0
+ * @category Function
+ * @param {number} n The number of calls at which `func` is no longer invoked.
+ * @param {Function} func The function to restrict.
+ * @returns {Function} Returns the new restricted function.
+ * @example
  *
- * @param {string} name
- * @returns {string}
- * @private
+ * jQuery(element).on('click', _.before(5, addContactToList));
+ * // => Allows adding up to 4 contacts to the list.
  */
-
-function toClassName (name) {
-  return name.slice(-5) === 'Error' ? name : name + 'Error'
+function before(n, func) {
+  var result;
+  if (typeof func != 'function') {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  n = toInteger(n);
+  return function() {
+    if (--n > 0) {
+      result = func.apply(this, arguments);
+    }
+    if (n <= 1) {
+      func = undefined;
+    }
+    return result;
+  };
 }
+
+/**
+ * Creates a function that is restricted to invoking `func` once. Repeat calls
+ * to the function return the value of the first invocation. The `func` is
+ * invoked with the `this` binding and arguments of the created function.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Function
+ * @param {Function} func The function to restrict.
+ * @returns {Function} Returns the new restricted function.
+ * @example
+ *
+ * var initialize = _.once(createApplication);
+ * initialize();
+ * initialize();
+ * // => `createApplication` is invoked once
+ */
+function once(func) {
+  return before(2, func);
+}
+
+/**
+ * Checks if `value` is the
+ * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
+ * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(_.noop);
+ * // => true
+ *
+ * _.isObject(null);
+ * // => false
+ */
+function isObject(value) {
+  var type = typeof value;
+  return !!value && (type == 'object' || type == 'function');
+}
+
+/**
+ * Checks if `value` is object-like. A value is object-like if it's not `null`
+ * and has a `typeof` result of "object".
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ * @example
+ *
+ * _.isObjectLike({});
+ * // => true
+ *
+ * _.isObjectLike([1, 2, 3]);
+ * // => true
+ *
+ * _.isObjectLike(_.noop);
+ * // => false
+ *
+ * _.isObjectLike(null);
+ * // => false
+ */
+function isObjectLike(value) {
+  return !!value && typeof value == 'object';
+}
+
+/**
+ * Checks if `value` is classified as a `Symbol` primitive or object.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
+ * @example
+ *
+ * _.isSymbol(Symbol.iterator);
+ * // => true
+ *
+ * _.isSymbol('abc');
+ * // => false
+ */
+function isSymbol(value) {
+  return typeof value == 'symbol' ||
+    (isObjectLike(value) && objectToString.call(value) == symbolTag);
+}
+
+/**
+ * Converts `value` to a finite number.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.12.0
+ * @category Lang
+ * @param {*} value The value to convert.
+ * @returns {number} Returns the converted number.
+ * @example
+ *
+ * _.toFinite(3.2);
+ * // => 3.2
+ *
+ * _.toFinite(Number.MIN_VALUE);
+ * // => 5e-324
+ *
+ * _.toFinite(Infinity);
+ * // => 1.7976931348623157e+308
+ *
+ * _.toFinite('3.2');
+ * // => 3.2
+ */
+function toFinite(value) {
+  if (!value) {
+    return value === 0 ? value : 0;
+  }
+  value = toNumber(value);
+  if (value === INFINITY || value === -INFINITY) {
+    var sign = (value < 0 ? -1 : 1);
+    return sign * MAX_INTEGER;
+  }
+  return value === value ? value : 0;
+}
+
+/**
+ * Converts `value` to an integer.
+ *
+ * **Note:** This method is loosely based on
+ * [`ToInteger`](http://www.ecma-international.org/ecma-262/7.0/#sec-tointeger).
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to convert.
+ * @returns {number} Returns the converted integer.
+ * @example
+ *
+ * _.toInteger(3.2);
+ * // => 3
+ *
+ * _.toInteger(Number.MIN_VALUE);
+ * // => 0
+ *
+ * _.toInteger(Infinity);
+ * // => 1.7976931348623157e+308
+ *
+ * _.toInteger('3.2');
+ * // => 3
+ */
+function toInteger(value) {
+  var result = toFinite(value),
+      remainder = result % 1;
+
+  return result === result ? (remainder ? result - remainder : result) : 0;
+}
+
+/**
+ * Converts `value` to a number.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to process.
+ * @returns {number} Returns the number.
+ * @example
+ *
+ * _.toNumber(3.2);
+ * // => 3.2
+ *
+ * _.toNumber(Number.MIN_VALUE);
+ * // => 5e-324
+ *
+ * _.toNumber(Infinity);
+ * // => Infinity
+ *
+ * _.toNumber('3.2');
+ * // => 3.2
+ */
+function toNumber(value) {
+  if (typeof value == 'number') {
+    return value;
+  }
+  if (isSymbol(value)) {
+    return NAN;
+  }
+  if (isObject(value)) {
+    var other = typeof value.valueOf == 'function' ? value.valueOf() : value;
+    value = isObject(other) ? (other + '') : other;
+  }
+  if (typeof value != 'string') {
+    return value === 0 ? value : +value;
+  }
+  value = value.replace(reTrim, '');
+  var isBinary = reIsBinary.test(value);
+  return (isBinary || reIsOctal.test(value))
+    ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
+    : (reIsBadHex.test(value) ? NAN : +value);
+}
+
+module.exports = once;
