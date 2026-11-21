@@ -1,49 +1,60 @@
-var tape = require('tape')
-var genfun = require('./')
+/**
+ * Usage: node test.js
+ */
 
-tape('generate add function', function(t) {
-  var fn = genfun()
-    ('function add(n) {')
-      ('return n + %d', 42)
-    ('}')
+var mime = require('../mime');
+var assert = require('assert');
+var path = require('path');
 
-  t.same(fn.toString(), 'function add(n) {\n  return n + 42\n}', 'code is indented')
-  t.same(fn.toFunction()(10), 52, 'function works')
-  t.end()
-})
+//
+// Test mime lookups
+//
 
-tape('generate function + closed variables', function(t) {
-  var fn = genfun()
-    ('function add(n) {')
-      ('return n + %d + number', 42)
-    ('}')
+assert.equal('text/plain', mime.lookup('text.txt'));     // normal file
+assert.equal('text/plain', mime.lookup('TEXT.TXT'));     // uppercase
+assert.equal('text/plain', mime.lookup('dir/text.txt')); // dir + file
+assert.equal('text/plain', mime.lookup('.text.txt'));    // hidden file
+assert.equal('text/plain', mime.lookup('.txt'));         // nameless
+assert.equal('text/plain', mime.lookup('txt'));          // extension-only
+assert.equal('text/plain', mime.lookup('/txt'));         // extension-less ()
+assert.equal('text/plain', mime.lookup('\\txt'));        // Windows, extension-less
+assert.equal('application/octet-stream', mime.lookup('text.nope')); // unrecognized
+assert.equal('fallback', mime.lookup('text.fallback', 'fallback')); // alternate default
 
-  var notGood = fn.toFunction()
-  var good = fn.toFunction({number:10})
+//
+// Test extensions
+//
 
-  try {
-    notGood(10)
-    t.ok(false, 'function should not work')
-  } catch (err) {
-    t.same(err.message, 'number is not defined', 'throws reference error')
-  }
+assert.equal('txt', mime.extension(mime.types.text));
+assert.equal('html', mime.extension(mime.types.htm));
+assert.equal('bin', mime.extension('application/octet-stream'));
+assert.equal('bin', mime.extension('application/octet-stream '));
+assert.equal('html', mime.extension(' text/html; charset=UTF-8'));
+assert.equal('html', mime.extension('text/html; charset=UTF-8 '));
+assert.equal('html', mime.extension('text/html; charset=UTF-8'));
+assert.equal('html', mime.extension('text/html ; charset=UTF-8'));
+assert.equal('html', mime.extension('text/html;charset=UTF-8'));
+assert.equal('html', mime.extension('text/Html;charset=UTF-8'));
+assert.equal(undefined, mime.extension('unrecognized'));
 
-  t.same(good(11), 63, 'function with closed var works')
-  t.end()
-})
+//
+// Test node.types lookups
+//
 
-tape('generate property', function(t) {
-  var gen = genfun()
+assert.equal('font/woff', mime.lookup('file.woff'));
+assert.equal('application/octet-stream', mime.lookup('file.buffer'));
+// TODO: Uncomment once #157 is resolved
+// assert.equal('audio/mp4', mime.lookup('file.m4a'));
+assert.equal('font/otf', mime.lookup('file.otf'));
 
-  t.same(gen.property('a'), 'a')
-  t.same(gen.property('42'), '"42"')
-  t.same(gen.property('b', 'a'), 'b.a')
-  t.same(gen.property('b', '42'), 'b["42"]')
-  t.same(gen.sym(42), 'tmp')
-  t.same(gen.sym('a'), 'a')
-  t.same(gen.sym('a'), 'a1')
-  t.same(gen.sym(42), 'tmp1')
-  t.same(gen.sym('const'), 'tmp2')
+//
+// Test charsets
+//
 
-  t.end()
-})
+assert.equal('UTF-8', mime.charsets.lookup('text/plain'));
+assert.equal('UTF-8', mime.charsets.lookup(mime.types.js));
+assert.equal('UTF-8', mime.charsets.lookup(mime.types.json));
+assert.equal(undefined, mime.charsets.lookup(mime.types.bin));
+assert.equal('fallback', mime.charsets.lookup('application/octet-stream', 'fallback'));
+
+console.log('\nAll tests passed');
