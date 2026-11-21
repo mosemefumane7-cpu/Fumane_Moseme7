@@ -1,11 +1,11 @@
-# Security issue reporting & disclosure process
+# Security
 
-Please reach out if you think you've found a security issue.
+Please file a private vulnerability report via GitHub, email [@ljharb](https://github.com/ljharb), or see https://tidelift.com/security if you have a potential security vulnerability to report.
 
-Email Evan Hahn at <me@evanhahn.com>, on Signal at [EvanHahn.64](https://signal.me/#eu/vDide_HmUgHnNa0usMXq8oHAA0gnl5dzCqDeHyXhkeIbIiOcPVhCZKXIZteSqoc8), or [in other ways](https://evanhahn.com/contact).
+## Incident Response Plan
 
-My playbook for security issues:
+Please see our [Incident Response Plan](https://github.com/ljharb/.github/blob/main/INCIDENT_RESPONSE_PLAN.md).
 
-- Acknowledge and address the concern as soon as possible
-- Issue advisories (CVEs, for example) as needed. Public disclosure may be embargoed to give people time to update
-- Consider patching non-current major versions depending on popularity and severity
+## Threat Model
+
+Please see [THREAT_MODEL.md](./THREAT_MODEL.md).
