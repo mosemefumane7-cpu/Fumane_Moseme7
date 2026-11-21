@@ -1,78 +1,49 @@
 {
-  "name": "semver",
-  "version": "7.8.6",
-  "description": "The semantic version parser used by npm.",
-  "main": "index.js",
-  "scripts": {
-    "test": "tap",
-    "snap": "tap",
-    "lint": "npm run eslint",
-    "postlint": "template-oss-check",
-    "lintfix": "npm run eslint -- --fix",
-    "posttest": "npm run lint",
-    "template-oss-apply": "template-oss-apply --force",
-    "eslint": "eslint \"**/*.{js,cjs,ts,mjs,jsx,tsx}\""
-  },
-  "devDependencies": {
-    "@npmcli/eslint-config": "^7.0.0",
-    "@npmcli/template-oss": "5.0.0",
-    "benchmark": "^2.1.4",
-    "tap": "^16.0.0"
-  },
-  "license": "ISC",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/npm/node-semver.git"
-  },
-  "bin": {
-    "semver": "bin/semver.js"
-  },
-  "files": [
-    "bin/",
-    "lib/",
-    "classes/",
-    "functions/",
-    "internal/",
-    "ranges/",
-    "index.js",
-    "preload.js",
-    "range.bnf"
+  "name": "statuses",
+  "description": "HTTP status utility",
+  "version": "2.0.2",
+  "contributors": [
+    "Douglas Christopher Wilson <doug@somethingdoug.com>",
+    "Jonathan Ong <me@jongleberry.com> (http://jongleberry.com)"
   ],
-  "tap": {
-    "timeout": 30,
-    "coverage-map": "map.js",
-    "nyc-arg": [
-      "--exclude",
-      "tap-snapshots/**"
-    ]
+  "repository": "jshttp/statuses",
+  "license": "MIT",
+  "keywords": [
+    "http",
+    "status",
+    "code"
+  ],
+  "files": [
+    "HISTORY.md",
+    "index.js",
+    "codes.json",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "csv-parse": "4.16.3",
+    "eslint": "7.19.0",
+    "eslint-config-standard": "14.1.1",
+    "eslint-plugin-import": "2.31.0",
+    "eslint-plugin-markdown": "1.0.2",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-promise": "4.3.1",
+    "eslint-plugin-standard": "4.1.0",
+    "mocha": "8.4.0",
+    "nyc": "15.1.0",
+    "raw-body": "2.5.2",
+    "stream-to-array": "2.3.0"
   },
   "engines": {
-    "node": ">=10"
+    "node": ">= 0.8"
   },
-  "author": "GitHub Inc.",
-  "templateOSS": {
-    "//@npmcli/template-oss": "This file is partially managed by @npmcli/template-oss. Edits may be overwritten.",
-    "version": "5.0.0",
-    "engines": ">=10",
-    "distPaths": [
-      "classes/",
-      "functions/",
-      "internal/",
-      "ranges/",
-      "index.js",
-      "preload.js",
-      "range.bnf"
-    ],
-    "allowPaths": [
-      "/classes/",
-      "/functions/",
-      "/internal/",
-      "/ranges/",
-      "/index.js",
-      "/preload.js",
-      "/range.bnf",
-      "/benchmarks"
-    ],
-    "publish": "true"
+  "scripts": {
+    "build": "node scripts/build.js",
+    "fetch": "node scripts/fetch-apache.js && node scripts/fetch-iana.js && node scripts/fetch-nginx.js && node scripts/fetch-node.js",
+    "lint": "eslint --plugin markdown --ext js,md .",
+    "test": "mocha --reporter spec --check-leaks --bail test/",
+    "test-ci": "nyc --reporter=lcov --reporter=text npm test",
+    "test-cov": "nyc --reporter=html --reporter=text npm test",
+    "update": "npm run fetch && npm run build",
+    "version": "node scripts/version-history.js && git add HISTORY.md"
   }
 }
