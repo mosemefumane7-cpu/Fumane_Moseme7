@@ -1,0 +1,1088 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#173b2b" />
+    <meta
+      name="description"
+      content="Batloung Farm inventory, purchasing, sales and payments dashboard."
+    />
+    <title>Batloung Farm | Distribution Desk</title>
+    <link rel="icon" type="image/svg+xml" href="/batloung-mark.svg" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script defer src="/app.js"></script>
+  </head>
+  <body>
+    <div id="loginView" class="login-shell" hidden>
+      <div class="login-card">
+        <div class="brand-lockup brand-lockup--login">
+          <span class="brand-mark" aria-hidden="true"
+            ><svg viewBox="0 0 44 44">
+              <path
+                d="M7 15h30v23H7zM4 15l3-8h30l3 8M13 15v23m18-23v23M7 23h30"
+              />
+              <path
+                d="M22 16c0-6 4-10 10-11-1 6-4 10-10 11Zm0 0c-1-4-4-6-8-6 1 4 4 6 8 6Z"
+              /></svg
+          ></span>
+          <span><strong>Batloung</strong><small>FARM DISTRIBUTION</small></span>
+        </div>
+        <div class="login-copy">
+          <span class="eyebrow">MASERU · WHOLESALE DESK</span>
+          <h1>Good trade starts<br />with a clear count.</h1>
+          <p>Sign in to manage today’s stock, orders and vendor balances.</p>
+        </div>
+        <form id="loginForm" class="stack-form">
+          <label data-register-only hidden
+            >Full name (optional)<input
+              name="fullName"
+              autocomplete="name"
+              maxlength="120"
+          /></label>
+          <label
+            >Username<input
+              name="username"
+              autocomplete="username"
+              required
+              minlength="3"
+              maxlength="40"
+          /></label>
+          <label
+            >Password<input
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+              maxlength="72"
+          /></label>
+          <label data-register-only hidden
+            >Confirm password<input
+              name="confirmPassword"
+              type="password"
+              autocomplete="new-password"
+              maxlength="72"
+          /></label>
+          <button
+            id="loginSubmit"
+            class="button button--primary button--wide"
+            type="submit"
+          >
+            Open distribution desk <span aria-hidden="true">→</span>
+          </button>
+          <p id="loginError" class="form-error" role="alert" hidden></p>
+          <button id="authModeToggle" class="text-link" type="button"></button>
+        </form>
+        <p class="login-footnote">
+          <span id="loginFootnote">Staff and administrators</span> · Lesotho / Southern Africa
+        </p>
+        <p class="login-footnote">
+          Are you a vendor? <a href="/vendor">Open the vendor portal</a>
+        </p>
+      </div>
+      <div class="login-art" aria-hidden="true">
+        <div class="art-sun"></div>
+        <div class="art-copy">
+          <span>FRESH STOCK.</span><span>FAIR TRADE.</span
+          ><span>READY TO MOVE.</span>
+        </div>
+        <div class="art-crate"><i></i><i></i><i></i><b></b></div>
+        <div class="art-leaf leaf-one"></div>
+        <div class="art-leaf leaf-two"></div>
+        <small>MASERU MARKET · LESOTHO</small>
+      </div>
+    </div>
+
+    <div id="appShell" class="app-shell" hidden>
+      <aside id="sidebar" class="sidebar" aria-label="Main navigation">
+        <div class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true"
+            ><svg viewBox="0 0 44 44">
+              <path
+                d="M7 15h30v23H7zM4 15l3-8h30l3 8M13 15v23m18-23v23M7 23h30"
+              />
+              <path
+                d="M22 16c0-6 4-10 10-11-1 6-4 10-10 11Zm0 0c-1-4-4-6-8-6 1 4 4 6 8 6Z"
+              /></svg
+          ></span>
+          <span><strong>Batloung</strong><small>FARM DISTRIBUTION</small></span>
+        </div>
+        <div class="nav-caption">OPERATIONS</div>
+        <nav id="mainNav">
+          <button class="nav-link is-active" data-view="dashboard">
+            <span class="nav-icon">⌂</span><span>Overview</span>
+          </button>
+          <button class="nav-link" data-view="suppliers">
+            <span class="nav-icon">↗</span><span>Suppliers</span
+            ><span class="nav-count" id="supplierCount">—</span>
+          </button>
+          <button class="nav-link" data-view="fruits">
+            <span class="nav-icon">◉</span><span>Fruit catalog</span>
+          </button>
+          <button class="nav-link" data-view="stock">
+            <span class="nav-icon">▤</span><span>Stock</span
+            ><span class="nav-count nav-count--alert" id="lowStockCount"
+              >—</span
+            >
+          </button>
+          <button class="nav-link" data-view="vendors">
+            <span class="nav-icon">♙</span><span>Vendors</span>
+          </button>
+          <div class="nav-caption nav-caption--spaced">TRADE DESK</div>
+          <button class="nav-link" data-view="purchases">
+            <span class="nav-icon">＋</span><span>New purchase</span>
+          </button>
+          <button class="nav-link" data-view="sales">
+            <span class="nav-icon">↗</span><span>Sales & payments</span>
+          </button>
+          <button class="nav-link" data-view="reports">
+            <span class="nav-icon">▥</span><span>Reports</span>
+          </button>
+          <button class="nav-link" data-view="team" id="teamNav" hidden>
+            <span class="nav-icon">♙</span><span>Team</span>
+          </button>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="market-status">
+            <span class="status-dot"></span
+            ><span
+              ><strong>Distribution desk</strong
+              ><small>Maseru, Lesotho</small></span
+            >
+          </div>
+          <button id="logoutButton" class="logout-button">
+            <span>↪</span> Sign out
+          </button>
+        </div>
+      </aside>
+
+      <div class="main-column">
+        <header class="topbar">
+          <button
+            id="menuButton"
+            class="icon-button menu-button"
+            aria-label="Open navigation"
+            aria-expanded="false"
+          >
+            ☰
+          </button>
+          <div class="breadcrumb">
+            <span>BATLOUNG FARM</span><b>/</b
+            ><strong id="currentSection">Overview</strong>
+          </div>
+          <div class="topbar-right">
+            <span class="date-pill" id="todayLabel"></span>
+            <div class="avatar" aria-hidden="true">BF</div>
+            <span class="admin-name" id="adminName">Admin</span>
+            <span class="role-pill" id="rolePill"></span>
+          </div>
+        </header>
+
+        <main id="mainContent" class="main-content">
+          <section
+            id="view-dashboard"
+            class="page-view is-visible"
+            aria-labelledby="dashboardTitle"
+          >
+            <div class="page-heading page-heading--dashboard">
+              <div>
+                <span class="eyebrow">DAILY MARKET BRIEF</span>
+                <h1 id="dashboardTitle">
+                  Good morning, <span id="greetingName">Admin</span
+                  ><span class="heading-period">.</span>
+                </h1>
+                <p>Here’s the distribution picture at a glance.</p>
+              </div>
+              <button class="button button--primary" data-view-link="purchases">
+                <span>＋</span> Record a purchase
+              </button>
+            </div>
+            <div class="kpi-grid">
+              <article class="kpi-card kpi-card--stock">
+                <div class="kpi-top">
+                  <span class="kpi-label">Boxes on hand</span
+                  ><span class="kpi-glyph">▤</span>
+                </div>
+                <strong id="kpiStock">—</strong>
+                <div class="kpi-foot">
+                  <span class="kpi-sub" id="kpiStockSub">Across all sizes</span
+                  ><span class="kpi-foot-mark">INVENTORY</span>
+                </div>
+              </article>
+              <article class="kpi-card">
+                <div class="kpi-top">
+                  <span class="kpi-label">Low stock items</span
+                  ><span class="kpi-glyph kpi-glyph--orange">!</span>
+                </div>
+                <strong id="kpiLow">—</strong>
+                <div class="kpi-foot">
+                  <span class="kpi-sub" id="kpiLowSub">Need a closer look</span
+                  ><button class="text-link" data-view-link="stock">
+                    View stock →
+                  </button>
+                </div>
+              </article>
+              <article class="kpi-card">
+                <div class="kpi-top">
+                  <span class="kpi-label">Sales this month</span
+                  ><span class="kpi-glyph">↗</span>
+                </div>
+                <strong id="kpiRevenue">—</strong>
+                <div class="kpi-foot">
+                  <span class="kpi-sub">Loti · current month</span
+                  ><span class="kpi-foot-mark">REVENUE</span>
+                </div>
+              </article>
+              <article class="kpi-card">
+                <div class="kpi-top">
+                  <span class="kpi-label">Outstanding</span
+                  ><span class="kpi-glyph kpi-glyph--orange">◷</span>
+                </div>
+                <strong id="kpiOutstanding">—</strong>
+                <div class="kpi-foot">
+                  <span class="kpi-sub" id="kpiOutstandingSub"
+                    >Across vendor accounts</span
+                  ><button class="text-link" data-view-link="vendors">
+                    Review balances →
+                  </button>
+                </div>
+              </article>
+            </div>
+            <div class="dashboard-grid">
+              <article class="panel chart-panel">
+                <div class="panel-heading">
+                  <div>
+                    <span class="eyebrow">MOVEMENT</span>
+                    <h2>Sales revenue</h2>
+                  </div>
+                  <span class="period-label">LAST 30 DAYS</span>
+                </div>
+                <div
+                  id="revenueChart"
+                  class="chart-area"
+                  aria-label="Sales revenue chart"
+                ></div>
+              </article>
+              <article class="panel chart-panel">
+                <div class="panel-heading">
+                  <div>
+                    <span class="eyebrow">FAST MOVERS</span>
+                    <h2>Top fruit lines</h2>
+                  </div>
+                  <button class="text-link" data-view-link="reports">
+                    Full report →
+                  </button>
+                </div>
+                <div
+                  id="fruitChart"
+                  class="fruit-chart"
+                  aria-label="Top fruit lines chart"
+                ></div>
+              </article>
+            </div>
+            <div class="dashboard-bottom-grid">
+              <article class="panel">
+                <div class="panel-heading">
+                  <div>
+                    <span class="eyebrow">TODAY’S VIEW</span>
+                    <h2>Stock watch</h2>
+                  </div>
+                  <button class="text-link" data-view-link="stock">
+                    All stock →
+                  </button>
+                </div>
+                <div id="dashboardLowStock" class="compact-list"></div>
+              </article>
+              <article class="panel note-panel">
+                <span class="note-mark">“</span>
+                <div>
+                  <span class="eyebrow">MARKET NOTE</span>
+                  <h2>Every crate has a next stop.</h2>
+                  <p>
+                    Keep counts current before the morning routes leave Maseru.
+                  </p>
+                  <button class="button button--outline" data-view-link="sales">
+                    Open sales desk <span>→</span>
+                  </button>
+                </div>
+                <div class="note-stamp">B<br />F</div>
+              </article>
+            </div>
+          </section>
+
+          <section
+            id="view-suppliers"
+            class="page-view"
+            aria-labelledby="suppliersTitle"
+            hidden
+          >
+            <div class="page-heading">
+              <div>
+                <span class="eyebrow">SOURCE NETWORK</span>
+                <h1 id="suppliersTitle">Suppliers</h1>
+                <p>South African partners bringing good fruit north.</p>
+              </div>
+              <button
+                class="button button--primary"
+                data-open-form="supplierForm"
+              >
+                ＋ Add supplier
+              </button>
+            </div>
+            <div class="content-columns">
+              <article class="panel panel--form">
+                <div class="panel-heading">
+                  <div>
+                    <span class="eyebrow">NEW PARTNER</span>
+                    <h2>Add supplier</h2>
+                  </div>
+                </div>
+                <form id="supplierForm" class="form-grid">
+                  <label
+                    >Business name<input
+                      name="business_name"
+                      required
+                      maxlength="140"
+                      placeholder="e.g. Highveld Harvest Co." /></label
+                  ><label
+                    >Contact person<input
+                      name="contact_person"
+                      required
+                      maxlength="120"
+                      placeholder="Full name" /></label
+                  ><label
+                    >Phone<input
+                      name="phone"
+                      required
+                      maxlength="24"
+                      placeholder="+27 11 555 0101" /></label
+                  ><label
+                    >Province<select name="province" required>
+                      <option value="">Choose province</option>
+                      <option>Gauteng</option>
+                      <option>Free State</option>
+                      <option>KwaZulu-Natal</option>
+                      <option>Western Cape</option>
+                      <option>Eastern Cape</option>
+                      <option>Limpopo</option>
+                      <option>Mpumalanga</option>
+                      <option>North West</option>
+                    </select></label
+                  ><label class="span-two"
+                    >Address<input
+                      name="address"
+                      maxlength="255"
+                      placeholder="Market or business address" /></label
+                  ><button
+                    class="button button--primary span-two"
+                    type="submit"
+                  >
+                    Save supplier <span>→</span>
+                  </button>
+                </form>
+              </article>
+              <article class="panel panel--table">
+                <div class="panel-heading">
+                  <div>
+                    <span class="eyebrow">PARTNER DIRECTORY</span>
+                    <h2>Supplier list</h2>
+                  </div>
+                  <span class="table-meta" id="supplierMeta"></span>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>BUSINESS</th>
+                        <th>CONTACT</th>
+                        <th>PROVINCE</th>
+                        <th>PHONE</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="suppliersTable"></tbody>
+                  </table>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section
+            id="view-fruits"
+            class="page-view"
+            aria-labelledby="fruitsTitle"
+            hidden
+          >
+            <div class="page-heading">
+              <div>
+                <span class="eyebrow">PRODUCT MASTER</span>
+                <h1 id="fruitsTitle">Fruit catalog</h1>
+                <p>Keep the produce list clean and ready for trade.</p>
+              </div>
+            </div>
+            <div class="content-columns">
+              <article class="panel panel--form">
+                <div class="panel-heading">
+                  <div>
+                    <span class="eyebrow">NEW PRODUCT</span>
+                    <h2>Add a fruit</h2>
+                  </div>
+                </div>
+                <form id="fruitForm" class="form-grid">
+                  <label
+                    >Fruit name<input
+                      name="fruit_name"
+                      required
+                      maxlength="80"
+                      placeholder="e.g. Peaches" /></label
+                  ><label
+                    >Status<select name="status">
+                      <option value="ACTIVE">Active</option>
+                      <option value="INACTIVE">Inactive</option>
+                    </select></label
+                  ><label class="span-two"
+                    >Description<input
+                      name="description"
+                      maxlength="500"
+                      placeholder="Short note for the team" /></label
+                  ><button
+                    class="button button--primary span-two"
+                    type="submit"
+                  >
+                    Add to catalog <span>→</span>
+                  </button>
+                </form>
+              </article>
+              <article class="panel panel--table">
+                <div class="panel-heading">
+                  <div>
+                    <span class="eyebrow">AVAILABLE LINES</span>
+                    <h2>Fruit catalog</h2>
+                  </div>
+                  <span class="table-meta" id="fruitMeta"></span>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>FRUIT</th>
+                        <th>DESCRIPTION</th>
+                        <th>STATUS</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="fruitsTable"></tbody>
+                  </table>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section
+            id="view-stock"
+            class="page-view"
+            aria-labelledby="stockTitle"
+            hidden
+          >
+            <div class="page-heading">
+              <div>
+                <span class="eyebrow">INVENTORY CONTROL</span>
+                <h1 id="stockTitle">Stock on hand</h1>
+                <p>Separate counts and selling prices for every crate size.</p>
+              </div>
+              <span class="inventory-total" id="stockTotalLabel">— BOXES</span>
+            </div>
+            <div class="stock-legend">
+              <span><i class="legend-dot legend-dot--ok"></i>Healthy</span
+              ><span
+                ><i class="legend-dot legend-dot--low"></i>At / below
+                threshold</span
+              ><span class="stock-hint"
+                >Select a price to update its stock card.</span
+              >
+            </div>
+            <div id="stockGrid" class="stock-grid"></div>
+          </section>
+
+          <section
+            id="view-vendors"
+            class="page-view"
+            aria-labelledby="vendorsTitle"
+            hidden
+          >
+            <div class="page-heading">
+              <div>
+                <span class="eyebrow">CUSTOMER NETWORK</span>
+                <h1 id="vendorsTitle">Vendors</h1>
+                <p>Street traders and small retailers across Lesotho.</p>
+              </div>
+              <button
+                class="button button--primary"
+                data-open-form="vendorForm"
+              >
+                ＋ Add vendor
+              </button>
+            </div>
+            <article class="panel">
+              <div class="panel-heading panel-heading--wrap">
+                <div>
+                  <span class="eyebrow">REGISTERED BUYERS</span>
+                  <h2>Vendor directory</h2>
+                </div>
+                <label class="search-field"
+                  ><span aria-hidden="true">⌕</span
+                  ><input
+                    id="vendorSearch"
+                    type="search"
+                    placeholder="Search name or phone"
+                    aria-label="Search vendor by name or phone"
+                /></label>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>VENDOR</th>
+                      <th>LOCATION</th>
+                      <th>PHONE</th>
+                      <th>OUTSTANDING</th>
+                      <th>REGISTERED</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="vendorsTable"></tbody>
+                </table>
+              </div>
+            </article>
+            <article class="panel vendor-create-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">NEW CUSTOMER</span>
+                  <h2>Register a vendor</h2>
+                </div>
+              </div>
+              <form id="vendorForm" class="form-grid form-grid--inline">
+                <label
+                  >Vendor name<input
+                    name="vendor_name"
+                    required
+                    maxlength="140" /></label
+                ><label
+                  >Phone<input
+                    name="phone_number"
+                    required
+                    maxlength="24"
+                    placeholder="+266 58 110 001" /></label
+                ><label
+                  >Location<input
+                    name="location"
+                    maxlength="180"
+                    placeholder="Maseru, Lesotho" /></label
+                ><button class="button button--primary" type="submit">
+                  Save vendor <span>→</span>
+                </button>
+              </form>
+            </article>
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">ACCOUNTS TO FOLLOW UP</span>
+                  <h2>Outstanding balances</h2>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>VENDOR</th>
+                      <th>PHONE</th>
+                      <th>OPEN BALANCE</th>
+                    </tr>
+                  </thead>
+                  <tbody id="outstandingTable"></tbody>
+                </table>
+              </div>
+            </article>
+          </section>
+
+          <section
+            id="view-purchases"
+            class="page-view"
+            aria-labelledby="purchaseTitle"
+            hidden
+          >
+            <div class="page-heading">
+              <div>
+                <span class="eyebrow">INBOUND STOCK</span>
+                <h1 id="purchaseTitle">New purchase</h1>
+                <p>
+                  Record incoming crates; stock updates when the purchase is
+                  saved.
+                </p>
+              </div>
+            </div>
+            <div class="content-columns content-columns--trade">
+              <article class="panel">
+                <div class="panel-heading">
+                  <div>
+                    <span class="eyebrow">PURCHASE ORDER</span>
+                    <h2>Receive from supplier</h2>
+                  </div>
+                  <span class="step-badge">01 / INBOUND</span>
+                </div>
+                <form id="purchaseForm">
+                  <div class="form-grid">
+                    <label class="span-two"
+                      >Supplier<select
+                        name="supplier_id"
+                        id="purchaseSupplier"
+                        required
+                      >
+                        <option value="">Choose supplier</option>
+                      </select></label
+                    >
+                  </div>
+                  <div class="items-header">
+                    <span>FRUIT & PACK SIZE</span><span>QTY</span
+                    ><span>UNIT COST</span><span></span>
+                  </div>
+                  <div id="purchaseItems" class="item-list"></div>
+                  <button
+                    type="button"
+                    id="addPurchaseItem"
+                    class="button button--outline button--small"
+                  >
+                    ＋ Add line
+                  </button>
+                  <div class="form-summary">
+                    <span>Purchase total</span
+                    ><strong id="purchaseTotal">M 0.00</strong>
+                  </div>
+                  <button
+                    class="button button--primary button--wide"
+                    type="submit"
+                  >
+                    Receive purchase <span>→</span>
+                  </button>
+                </form>
+              </article>
+              <aside class="panel trade-aside">
+                <span class="eyebrow">INBOUND NOTES</span>
+                <h2>Make the count count.</h2>
+                <p>
+                  Quantities will be added to the matching fruit and size.
+                  Existing selling prices stay as set; a first-time size gets a
+                  cost-based starter price you can adjust in Stock.
+                </p>
+                <div class="aside-detail">
+                  <span class="aside-icon">↗</span>
+                  <div>
+                    <strong>Supplier history</strong
+                    ><small
+                      >Every receipt is saved with its source and line
+                      costs.</small
+                    >
+                  </div>
+                </div>
+                <div class="aside-detail">
+                  <span class="aside-icon">▤</span>
+                  <div>
+                    <strong>Stock updates together</strong
+                    ><small
+                      >Purchase and inventory changes commit as one
+                      transaction.</small
+                    >
+                  </div>
+                </div>
+              </aside>
+            </div>
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">RECENT RECEIPTS</span>
+                  <h2>Purchase history</h2>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>REFERENCE</th>
+                      <th>SUPPLIER</th>
+                      <th>DATE</th>
+                      <th>LINES</th>
+                      <th>TOTAL</th>
+                    </tr>
+                  </thead>
+                  <tbody id="purchasesTable"></tbody>
+                </table>
+              </div>
+            </article>
+          </section>
+
+          <section
+            id="view-sales"
+            class="page-view"
+            aria-labelledby="salesTitle"
+            hidden
+          >
+            <div class="page-heading">
+              <div>
+                <span class="eyebrow">OUTBOUND TRADE</span>
+                <h1 id="salesTitle">Sales & payments</h1>
+                <p>
+                  Build a sale from live stock and keep vendor balances current.
+                </p>
+              </div>
+            </div>
+            <div class="content-columns content-columns--trade">
+              <article class="panel">
+                <div class="panel-heading">
+                  <div>
+                    <span class="eyebrow">NEW SALE</span>
+                    <h2>Build an order</h2>
+                  </div>
+                  <span class="step-badge step-badge--orange"
+                    >02 / OUTBOUND</span
+                  >
+                </div>
+                <form id="saleForm">
+                  <label class="full-label"
+                    >Vendor<select name="vendor_id" id="saleVendor" required>
+                      <option value="">Choose vendor</option>
+                    </select></label
+                  >
+                  <div class="items-header items-header--sale">
+                    <span>FRUIT & PACK SIZE</span><span>QTY</span
+                    ><span>AVAILABLE / PRICE</span><span></span>
+                  </div>
+                  <div id="saleItems" class="item-list"></div>
+                  <button
+                    type="button"
+                    id="addSaleItem"
+                    class="button button--outline button--small"
+                  >
+                    ＋ Add line
+                  </button>
+                  <div class="sale-payment-fields">
+                    <label
+                      >Initial payment (optional)<input
+                        name="payment_amount"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00" /></label
+                    ><label
+                      >Method<select name="payment_method">
+                        <option value="CASH">Cash</option>
+                        <option value="MOBILE_MONEY">Mobile money</option>
+                        <option value="CREDIT">Credit</option>
+                      </select></label
+                    >
+                  </div>
+                  <div class="form-summary">
+                    <span>Sale total</span
+                    ><strong id="saleTotal">M 0.00</strong>
+                  </div>
+                  <button
+                    class="button button--primary button--wide"
+                    type="submit"
+                  >
+                    Complete sale <span>→</span>
+                  </button>
+                </form>
+              </article>
+              <aside class="panel trade-aside trade-aside--orange">
+                <span class="eyebrow">LIVE STOCK CHECK</span>
+                <h2>Only sell what’s on hand.</h2>
+                <p>
+                  Prices come from the stock card. Availability is checked again
+                  under a database lock before a sale can commit.
+                </p>
+                <div class="stock-check-card">
+                  <span class="status-dot"></span
+                  ><span
+                    ><strong>All lines checked together</strong
+                    ><small
+                      >If a line falls short, the full sale is cancelled.</small
+                    ></span
+                  >
+                </div>
+                <div class="aside-detail">
+                  <span class="aside-icon">◷</span>
+                  <div>
+                    <strong>Payments stay flexible</strong
+                    ><small
+                      >Record part now and settle the balance later.</small
+                    >
+                  </div>
+                </div>
+              </aside>
+            </div>
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">RECENT TRANSACTIONS</span>
+                  <h2>Sales history</h2>
+                </div>
+                <span class="table-meta" id="salesMeta"></span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>SALE</th>
+                      <th>VENDOR</th>
+                      <th>DATE</th>
+                      <th>TOTAL</th>
+                      <th>PAID</th>
+                      <th>STATUS</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="salesTable"></tbody>
+                </table>
+              </div>
+            </article>
+          </section>
+
+          <section
+            id="view-team"
+            class="page-view"
+            aria-labelledby="teamTitle"
+            hidden
+          >
+            <div class="page-heading">
+              <div>
+                <span class="eyebrow">ACCOUNTS</span>
+                <h1 id="teamTitle">Team</h1>
+                <p>
+                  New sign-ups start as read-only staff. Promote someone to
+                  administrator to let them make changes.
+                </p>
+              </div>
+            </div>
+            <article class="panel">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Username</th>
+                      <th>Role</th>
+                      <th>Joined</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="teamTable"></tbody>
+                </table>
+              </div>
+            </article>
+          </section>
+
+          <section
+            id="view-reports"
+            class="page-view"
+            aria-labelledby="reportsTitle"
+            hidden
+          >
+            <div class="page-heading">
+              <div>
+                <span class="eyebrow">BUSINESS PICTURE</span>
+                <h1 id="reportsTitle">Reports</h1>
+                <p>Useful signals for the next delivery run.</p>
+              </div>
+            </div>
+            <article class="panel report-filter">
+              <div>
+                <span class="eyebrow">DATE WINDOW</span>
+                <h2>Revenue report</h2>
+              </div>
+              <form id="reportForm" class="date-filter">
+                <label>From<input type="date" name="from" required /></label
+                ><label>To<input type="date" name="to" required /></label
+                ><button class="button button--primary" type="submit">
+                  Run report <span>→</span>
+                </button>
+              </form>
+            </article>
+            <div class="report-kpis">
+              <article class="panel report-total">
+                <span class="eyebrow">SALES REVENUE</span
+                ><strong id="reportRevenue">M 0.00</strong
+                ><small id="reportWindow">Choose a date range</small>
+              </article>
+              <article class="panel top-vendor-card">
+                <span class="eyebrow">TOP VENDOR · BOXES BOUGHT</span
+                ><strong id="topVendorName">—</strong
+                ><small id="topVendorBoxes">No report run yet</small>
+              </article>
+            </div>
+            <div class="dashboard-grid">
+              <article class="panel">
+                <div class="panel-heading">
+                  <div>
+                    <span class="eyebrow">TOP 5</span>
+                    <h2>Most sold fruit</h2>
+                  </div>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>FRUIT</th>
+                        <th>BOXES SOLD</th>
+                      </tr>
+                    </thead>
+                    <tbody id="reportFruitsTable"></tbody>
+                  </table>
+                </div>
+              </article>
+              <article class="panel">
+                <div class="panel-heading">
+                  <div>
+                    <span class="eyebrow">CURRENT INVENTORY</span>
+                    <h2>Stock levels</h2>
+                  </div>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>FRUIT</th>
+                        <th>SIZE</th>
+                        <th>ON HAND</th>
+                        <th>STATUS</th>
+                      </tr>
+                    </thead>
+                    <tbody id="reportStockTable"></tbody>
+                  </table>
+                </div>
+              </article>
+            </div>
+          </section>
+        </main>
+        <footer class="app-footer">
+          <span>BATLOUNG FARM · MASERU, LESOTHO</span
+          ><span>Keep the crates moving.</span>
+        </footer>
+      </div>
+    </div>
+
+    <dialog id="paymentDialog" class="modal-dialog">
+      <form id="paymentForm" method="dialog" class="modal-card">
+        <button
+          type="button"
+          class="modal-close"
+          data-close-dialog
+          aria-label="Close"
+        >
+          ×</button
+        ><span class="eyebrow">SETTLE THE ACCOUNT</span>
+        <h2>Record payment</h2>
+        <p id="paymentSaleLabel" class="modal-description"></p>
+        <input name="sale_id" type="hidden" /><label
+          >Amount (M)<input
+            name="amount"
+            type="number"
+            min="0.01"
+            step="0.01"
+            required /></label
+        ><label
+          >Payment method<select name="method" required>
+            <option value="CASH">Cash</option>
+            <option value="MOBILE_MONEY">Mobile money</option>
+            <option value="CREDIT">Credit</option>
+          </select></label
+        ><label
+          >Reference <span class="optional-label">OPTIONAL</span
+          ><input
+            name="reference"
+            maxlength="120"
+            placeholder="Receipt or mobile money reference"
+        /></label>
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="button button--outline"
+            data-close-dialog
+          >
+            Cancel</button
+          ><button type="submit" class="button button--primary">
+            Save payment
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="stockDialog" class="modal-dialog">
+      <form id="stockForm" method="dialog" class="modal-card">
+        <button
+          type="button"
+          class="modal-close"
+          data-close-dialog
+          aria-label="Close"
+        >
+          ×</button
+        ><span class="eyebrow">STOCK CARD</span>
+        <h2 id="stockDialogTitle">Update stock settings</h2>
+        <input name="stock_id" type="hidden" /><label
+          >Selling price (M)<input
+            name="selling_price"
+            type="number"
+            min="0"
+            step="0.01"
+            required /></label
+        ><label
+          >Low-stock threshold<input
+            name="low_stock_threshold"
+            type="number"
+            min="0"
+            step="1"
+            required
+        /></label>
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="button button--outline"
+            data-close-dialog
+          >
+            Cancel</button
+          ><button type="submit" class="button button--primary">
+            Save stock card
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="editDialog" class="modal-dialog">
+      <form id="editForm" method="dialog" class="modal-card">
+        <button
+          type="button"
+          class="modal-close"
+          data-close-dialog
+          aria-label="Close"
+        >
+          ×</button
+        ><span class="eyebrow">RECORD DETAILS</span>
+        <h2 id="editDialogTitle">Edit record</h2>
+        <div id="editFields" class="edit-fields"></div>
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="button button--outline"
+            data-close-dialog
+          >
+            Cancel</button
+          ><button type="submit" class="button button--primary">
+            Save changes
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <div
+      id="toastRegion"
+      class="toast-region"
+      aria-live="polite"
+      aria-atomic="false"
+    ></div>
+  </body>
+</html>

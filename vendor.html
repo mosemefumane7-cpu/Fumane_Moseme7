@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#173b2b" />
+    <meta name="description" content="Batloung Farm vendor portal: view your orders and pay your balance." />
+    <title>Batloung Farm | Vendor Portal</title>
+    <link rel="icon" type="image/svg+xml" href="/batloung-mark.svg" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/vendor.css" />
+    <script defer src="/vendor.js"></script>
+  </head>
+  <body class="vp-body">
+    <div id="vpLoading" class="vp-center">Loading…</div>
+
+    <!-- Sign in / create account -->
+    <main id="vpAuth" class="vp-auth" hidden>
+      <div class="vp-card">
+        <div class="vp-brand">
+          <img src="/batloung-mark.svg" alt="" width="38" height="38" />
+          <span>Batloung Farm</span>
+        </div>
+        <p class="eyebrow">VENDOR PORTAL</p>
+        <h1 id="vpAuthTitle">Sign in</h1>
+        <p id="vpAuthHint" class="vp-muted">Use the phone number Batloung Farm has registered for your business.</p>
+        <form id="vpAuthForm" class="stack-form" novalidate>
+          <label>Phone number
+            <input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+266 5811 0001" required />
+          </label>
+          <label>Password
+            <input name="password" type="password" autocomplete="current-password" minlength="8" maxlength="72" required />
+          </label>
+          <label id="vpConfirmRow" hidden>Confirm password
+            <input name="confirmPassword" type="password" autocomplete="new-password" maxlength="72" />
+          </label>
+          <button id="vpAuthSubmit" class="button button--primary button--wide" type="submit">Sign in</button>
+          <p id="vpAuthError" class="form-error" role="alert" hidden></p>
+          <button id="vpAuthToggle" class="text-link" type="button">First time here? Create your account</button>
+        </form>
+        <p class="login-footnote"><a href="/">Staff sign-in</a> · Lesotho / Southern Africa</p>
+      </div>
+    </main>
+
+    <!-- Signed in -->
+    <div id="vpApp" hidden>
+      <header class="vp-header">
+        <div class="vp-brand">
+          <img src="/batloung-mark.svg" alt="" width="34" height="34" />
+          <span>Batloung Farm <small>Vendor Portal</small></span>
+        </div>
+        <div class="vp-user">
+          <span id="vpVendorName"></span>
+          <button id="vpLogout" class="button button--outline button--small" type="button">Sign out</button>
+        </div>
+      </header>
+
+      <main class="vp-main">
+        <section class="vp-welcome">
+          <h1 id="vpWelcome">Your account</h1>
+          <p id="vpMeta" class="vp-muted"></p>
+        </section>
+
+        <section class="vp-kpis" aria-label="Account summary">
+          <article class="vp-kpi vp-kpi--due">
+            <span>Outstanding balance</span><strong id="kpiDue">M 0.00</strong><small id="kpiOpen"></small>
+          </article>
+          <article class="vp-kpi"><span>Paid so far</span><strong id="kpiPaid">M 0.00</strong></article>
+          <article class="vp-kpi"><span>Total ordered</span><strong id="kpiTotal">M 0.00</strong></article>
+        </section>
+
+        <section class="vp-panel">
+          <div class="vp-panel-head"><h2>Your orders</h2></div>
+          <div class="vp-table-wrap">
+            <table class="vp-table">
+              <thead>
+                <tr><th>Order</th><th>Date</th><th>Status</th><th class="num">Total</th><th class="num">Paid</th><th class="num">Balance</th><th></th></tr>
+              </thead>
+              <tbody id="vpSales"></tbody>
+            </table>
+          </div>
+          <p id="vpNoSales" class="vp-empty" hidden>You have no orders yet.</p>
+        </section>
+
+        <section class="vp-panel">
+          <div class="vp-panel-head"><h2>Recent payments</h2></div>
+          <div class="vp-table-wrap">
+            <table class="vp-table">
+              <thead><tr><th>Date</th><th>Order</th><th>Method</th><th>Reference</th><th class="num">Amount</th></tr></thead>
+              <tbody id="vpPayments"></tbody>
+            </table>
+          </div>
+          <p id="vpNoPayments" class="vp-empty" hidden>No payments recorded yet.</p>
+        </section>
+      </main>
+    </div>
+
+    <!-- Order details and payment -->
+    <dialog id="vpDialog" class="vp-dialog">
+      <div class="vp-dialog-head">
+        <h2 id="vpDialogTitle">Order</h2>
+        <button id="vpDialogClose" class="text-link" type="button" aria-label="Close">Close ✕</button>
+      </div>
+      <div id="vpDialogBody"></div>
+      <form id="vpPayForm" class="stack-form vp-pay" novalidate hidden>
+        <h3>Pay for this order</h3>
+        <p class="vp-muted">
+          Pay Batloung Farm by mobile money, then enter the amount and the transaction reference
+          from your confirmation message. Staff can check the reference against their records.
+        </p>
+        <label>Amount (M)
+          <input name="amount" type="number" inputmode="decimal" min="0.01" step="0.01" required />
+        </label>
+        <button id="vpPayFull" class="text-link" type="button"></button>
+        <label>Mobile money reference
+          <input name="reference" type="text" maxlength="80" minlength="4" placeholder="e.g. MP260101.1234.A56789" autocomplete="off" required />
+        </label>
+        <button id="vpPaySubmit" class="button button--primary button--wide" type="submit">Record payment</button>
+        <p id="vpPayError" class="form-error" role="alert" hidden></p>
+      </form>
+    </dialog>
+
+    <div id="vpToasts" class="vp-toasts" aria-live="polite"></div>
+  </body>
+</html>

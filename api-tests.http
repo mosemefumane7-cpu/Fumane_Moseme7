@@ -1,0 +1,176 @@
+@baseUrl = http://localhost:3000
+@adminUsername = admin
+@adminPassword = change-this-before-testing
+@staffUsername = staff.test
+@staffPassword = change-this-staff-password
+@csrfToken = paste-data.csrfToken-from-login-response-here
+
+### Health is public
+GET {{baseUrl}}/api/health
+
+### First-run check (public): hasUsers=false means the next registration becomes the administrator
+GET {{baseUrl}}/api/auth/status
+
+### Register. On an empty users table this creates the administrator; afterwards it creates read-only staff.
+### Registration also signs in: keep the Set-Cookie session and copy data.csrfToken into @csrfToken above.
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{"username":"{{adminUsername}}","fullName":"Desk Administrator","password":"{{adminPassword}}"}
+
+### Duplicate username should return 409
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{"username":"{{adminUsername}}","password":"{{adminPassword}}"}
+
+### Login (when the account already exists). Keep the Set-Cookie session and copy data.csrfToken into @csrfToken above.
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{"username":"{{adminUsername}}","password":"{{adminPassword}}"}
+
+### Authenticated session
+GET {{baseUrl}}/api/auth/me
+
+### Missing CSRF header should return 403 (no mutation is performed)
+POST {{baseUrl}}/api/fruits
+Content-Type: application/json
+
+{"fruit_name":"CSRF check only","description":"This request must be rejected before writing.","status":"ACTIVE"}
+
+### FAILING SALE — run against a fresh seed (Apples/LARGE = 6), before the purchase below
+### The third line should return 409. Use scripts/demo-rollback.js to assert that stock and sale IDs stay unchanged.
+POST {{baseUrl}}/api/sales
+Content-Type: application/json
+X-CSRF-Token: {{csrfToken}}
+
+{"vendor_id":1,"items":[{"fruit_id":1,"packaging_size":"SMALL","quantity":2},{"fruit_id":2,"packaging_size":"SMALL","quantity":3},{"fruit_id":1,"packaging_size":"LARGE","quantity":10}]}
+
+### Supplier endpoints
+GET {{baseUrl}}/api/suppliers
+GET {{baseUrl}}/api/suppliers/1
+POST {{baseUrl}}/api/suppliers
+Content-Type: application/json
+X-CSRF-Token: {{csrfToken}}
+
+{"business_name":"Test Orchard Supply","contact_person":"Mpho Test","phone":"+271199990001","province":"Gauteng","address":"Johannesburg market"}
+
+### Duplicate phone should return 409
+POST {{baseUrl}}/api/suppliers
+Content-Type: application/json
+X-CSRF-Token: {{csrfToken}}
+
+{"business_name":"Duplicate Supplier","contact_person":"Test Contact","phone":"+271199990001","province":"Gauteng"}
+
+### Update an existing supplier; deleting supplier 1 should return 409 because it has purchases
+PUT {{baseUrl}}/api/suppliers/1
+Content-Type: application/json
+X-CSRF-Token: {{csrfToken}}
+
+{"business_name":"Highveld Harvest Co.","contact_person":"Thabo Mokoena","phone":"+27115550101","province":"Gauteng","address":"Johannesburg Fresh Produce Market"}
+DELETE {{baseUrl}}/api/suppliers/1
+X-CSRF-Token: {{csrfToken}}
+
+### Supplier 8 has no seeded purchases; delete only in a disposable test database
+DELETE {{baseUrl}}/api/suppliers/8
+X-CSRF-Token: {{csrfToken}}
+
+### Fruit endpoints
+GET {{baseUrl}}/api/fruits
+POST {{baseUrl}}/api/fruits
+Content-Type: application/json
+X-CSRF-Token: {{csrfToken}}
+
+{"fruit_name":"Peaches","description":"Seasonal stone fruit","status":"ACTIVE"}
+PUT {{baseUrl}}/api/fruits/1
+Content-Type: application/json
+X-CSRF-Token: {{csrfToken}}
+
+{"fruit_name":"Apples","description":"Crisp South African apples packed by size.","status":"ACTIVE"}
+
+### Stock endpoints
+GET {{baseUrl}}/api/stock
+GET {{baseUrl}}/api/stock/fruit/1
+GET {{baseUrl}}/api/stock/low
+PUT {{baseUrl}}/api/stock/1
+Content-Type: application/json
+X-CSRF-Token: {{csrfToken}}
+
+{"selling_price":35,"low_stock_threshold":10}
+
+### Vendor endpoints
+GET {{baseUrl}}/api/vendors
+GET {{baseUrl}}/api/vendors/1
+GET {{baseUrl}}/api/vendors/search?q=market
+GET {{baseUrl}}/api/vendors/1/balance
+GET {{baseUrl}}/api/vendors/outstanding
+POST {{baseUrl}}/api/vendors
+Content-Type: application/json
+X-CSRF-Token: {{csrfToken}}
+
+{"vendor_name":"Test Maseru Retail","phone_number":"+26658119999","location":"Maseru Central"}
+PUT {{baseUrl}}/api/vendors/1
+Content-Type: application/json
+X-CSRF-Token: {{csrfToken}}
+
+{"vendor_name":"Maseru Morning Market Stall","phone_number":"+26658110001","location":"Maseru Central Market"}
+
+### Purchase transaction; this changes stock, so run after the failing-sale scenario
+POST {{baseUrl}}/api/purchases
+Content-Type: application/json
+X-CSRF-Token: {{csrfToken}}
+
+{"supplier_id":1,"items":[{"fruit_id":1,"packaging_size":"LARGE","quantity":1,"unit_cost":48},{"fruit_id":2,"packaging_size":"SMALL","quantity":5,"unit_cost":15}]}
+GET {{baseUrl}}/api/purchases
+GET {{baseUrl}}/api/purchases/1
+
+### Successful partially-paid sale; prices are looked up from stock by the server
+POST {{baseUrl}}/api/sales
+Content-Type: application/json
+X-CSRF-Token: {{csrfToken}}
+
+{"vendor_id":1,"items":[{"fruit_id":2,"packaging_size":"SMALL","quantity":2}],"payment":{"amount":10,"method":"CASH"}}
+GET {{baseUrl}}/api/sales
+GET {{baseUrl}}/api/sales/1
+
+### Payment endpoints: inspect seeded sale 2, record a valid payment, then confirm overpayment is rejected
+GET {{baseUrl}}/api/sales/2/payments
+POST {{baseUrl}}/api/sales/2/payments
+Content-Type: application/json
+X-CSRF-Token: {{csrfToken}}
+
+{"amount":190,"method":"MOBILE_MONEY","reference":"TEST-MM-2"}
+POST {{baseUrl}}/api/sales/2/payments
+Content-Type: application/json
+X-CSRF-Token: {{csrfToken}}
+
+{"amount":0.01,"method":"CASH"}
+
+### Reports: top 5 fruits, range revenue, trend chart, top vendor, stock levels
+GET {{baseUrl}}/api/reports/top-fruits
+GET {{baseUrl}}/api/reports/revenue?from=2026-11-01&to=2026-11-30
+GET {{baseUrl}}/api/reports/revenue-trend?from=2026-11-01&to=2026-11-30
+GET {{baseUrl}}/api/reports/top-vendor
+GET {{baseUrl}}/api/reports/stock-levels
+
+### Team (administrator only): list accounts
+GET {{baseUrl}}/api/auth/users
+
+### Promote a staff account (replace 2 with a user_id from the list); "staff" makes it read-only again.
+### Demoting the only administrator returns 409.
+PATCH {{baseUrl}}/api/auth/users/2/role
+Content-Type: application/json
+X-CSRF-Token: {{csrfToken}}
+
+{"role":"admin"}
+
+### Read-only staff check: register/login as staff in a separate client, then any POST/PUT/DELETE returns 403
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{"username":"{{staffUsername}}","password":"{{staffPassword}}"}
+
+### Sign out after all authenticated requests
+POST {{baseUrl}}/api/auth/logout
+X-CSRF-Token: {{csrfToken}}

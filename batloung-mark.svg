@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Batloung Farm crate and leaf</title>
+  <rect width="128" height="128" rx="28" fill="#173b2b"/>
+  <path d="M25 48h78v54H25zM19 48l7-19h76l7 19M40 48v54m48-54v54M26 71h76" fill="none" stroke="#f7f3e8" stroke-linecap="round" stroke-linejoin="round" stroke-width="6"/>
+  <circle cx="64" cy="59" r="15" fill="#e98335"/>
+  <path d="M62 43c2-15 13-23 29-23-3 15-13 23-29 23Zm0 1c-4-10-12-15-22-15 3 10 10 15 22 15Z" fill="#9bc17e" stroke="#173b2b" stroke-linejoin="round" stroke-width="3"/>
+</svg>

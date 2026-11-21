@@ -1,0 +1,1 @@
+Run the rollback demonstration against the freshly seeded database before executing purchase tests that change inventory. The scenario expects Apples/LARGE to have exactly 6 available. `node scripts/demo-rollback.js` checks the baseline, expects HTTP 409 for a request of 10, then compares stock and sale IDs before and after to verify there was no partial write.
